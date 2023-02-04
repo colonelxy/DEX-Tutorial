@@ -1,6 +1,16 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("dotenv").config({path: ".env"});
 
-/** @type import('hardhat/config').HardhatUserConfig */
+const ALCHEMY_URL= process.env.ALCHEMY_URL;
+const GOERLI_KEY=process.env.GOERLI_KEY;
+
+
 module.exports = {
-  solidity: "0.8.17",
+  solidity: "0.8.18",
+  networks: {
+    goerli: {
+      url:ALCHEMY_URL,
+      accounts: [GOERLI_KEY]
+    },
+  },
 };

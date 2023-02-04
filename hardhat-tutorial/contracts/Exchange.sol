@@ -8,7 +8,7 @@ contract Exchange is ERC20 {
 
     address public cryptoDevTokenAddress;
 
-    constructor (_CryptoDevToken) ERC20("CryptoDev LP Token", "CDLP") {
+    constructor (address _CryptoDevToken) ERC20("CryptoDev LP Token", "CDLP") {
         require(_CryptoDevToken != address(0), "Token address cannot be null");
         cryptoDevTokenAddress = _CryptoDevToken;
     }
@@ -41,7 +41,10 @@ contract Exchange is ERC20 {
         }
         return liquidity;
 
-        function removeLiquidity(uint _amount) public returns (uint, uint) {
+        
+    }
+
+    function removeLiquidity(uint _amount) public returns (uint, uint) {
             require(_amount >0, "_amount should be greater than zero");
             uint ethReserve = address(this).balance;
             uint _totalSupply = totalSupply();
@@ -56,5 +59,52 @@ contract Exchange is ERC20 {
             ERC20(cryptoDevTokenAddress).transfer(msg.sender, cryptoDevTokenAmount);
             return (ethAmount, cryptoDevTokenAmount);
         }
+
+    function getAmountOfTokens(
+        uint256 inputAmount,
+        uint256 inputReserve,
+        uint256 outputReserve
+    ) public pure returns (uint256) {
+        require(inputReserve > 0 && outputReserve > 0, "Invalid reserves");
+
+        uint256 inputAmountWithFee = inputAmount * 99;
+        uint256 numerator = inputAmountWithFee * outputReserve;
+        uint256 denominator = (inputReserve * 100) + inputAmountWithFee;
+        return numerator/ denominator;
+    }
+
+    // @dev Swap ETH for cryptoDevToken
+
+    function ethToCryptoDevToken(uint _minTokens) public payable {
+        uint256 tokenReserve = getReserve();
+
+        uint256 tokensBought = getAmountOfTokens(
+            msg.value,
+            address(this).balance - msg.value,
+            tokenReserve
+        );
+
+        require(tokensBought >= _minTokens, "Insufficient output amount");
+        ERC20(cryptoDevTokenAddress).transfer(msg.sender, tokensBought);
+    }
+
+    // @dev Swap cryptoDevToken for ETH 
+
+    function cryptoDevTokenToEth( uint _tokensSold, uint _minEth) public {
+        uint256 tokenReserve = getReserve();
+        uint256 ethBought = getAmountOfTokens(
+            _tokensSold,
+            tokenReserve,
+            address(this).balance
+        );
+
+        require(ethBought >= _minEth, "Insufficient output amount");
+        ERC20(cryptoDevTokenAddress).transferFrom(
+            msg.sender,
+             address(this),
+             _tokensSold
+        );
+
+        payable(msg.sender).transfer(ethBought);
     }
 }
