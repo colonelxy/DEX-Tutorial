@@ -1,4 +1,4 @@
-import {BigNumber, providers, utils} from 'ethers'
+import { BigNumber, providers, utils } from "ethers";
 import Head from 'next/head'
 import React, { useEffect, useRef, useState} from 'react'
 import Web3Modal from 'web3modal'
@@ -20,6 +20,7 @@ import {
 } from '../utils/swap'
 
 
+
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [liquidityTab, setLiquidityTab] = useState(true);
@@ -36,7 +37,7 @@ export default function Home() {
   const [ removeLPTokens, setRemoveLPTokens] = useState("0");
   const [swapAmount, setSwapAmount] = useState("");
   const [ tokensToBeReceivedAfterSwap, setTokensToBeReceivedAfterSwap] = useState(zero);
-  const [ ethSelected, setEtheSelected] = useState(true);
+  const [ ethSelected, setEthSelected] = useState(true);
   const web3ModalRef = useRef();
   const [walletConnected, setWalletConnected] = useState(false);
 
@@ -220,8 +221,172 @@ export default function Home() {
   };
 
   // UseEffect 
+  useEffect(()=> {
+    if(!walletConnected) {
+      web3ModalRef.current = new Web3Modal({
+        network: "goerli",
+        providerOptions: {},
+        disableInjectedProvider: false,
+      });
+      connectWallet();
+      getAmounts();
+    }
 
-  
+  }, [walletConnected]);
 
+  const renderButton = () => {
+    if(!walletConnected) {
+      return (
+        <button className={styles.button} onClick={connectWallet}>Connect wallet</button>
+      );
+    }
+
+    if(loading) {
+      return <button className={styles.button}>Loading...</button>
+    }
+
+    if(liquidityTab) {
+      return (
+        <div>
+          <div className={styles.description}>
+            You have:
+            <br/>
+            {utils.formatEther(cdBalance)} Crypto Dev Tokens <br/>
+            {utils.formatEther(ethBalance)} Ether <br/>
+            {utils.formatEther(lpBalance)} Crypto Dev LP Tokens
+          </div>
+          <div>
+            {utils.parseEther(reservedCD.toString()).eq(zero)? (
+              <div>
+                <input
+                type="number"
+                placeholder = "Amount of Ether"
+                onChange={(e) => setAddEther(e.target.value || "0")}
+                className={styles.input}
+                />
+                <input 
+                type="number"
+                placeholder="Amount of CryptoDev tokens"
+                onChange={(e) => setAddCDTokens(BigNumber.from(utils.parseEther(e.target.value || "0"))
+                )}
+                className={styles.input}
+                />
+                <button className={styles.button1} onClick={_addLiquidity}>
+                  Add
+                </button>
+              </div>
+            ) : (
+              <div>
+                <input type="number" placeholder="Amount of Ether" onChange={async (e) => {
+                  setAddEther(e.target.value || "0");
+                  const _addCDTokens = await calculateCD(
+                    e.target.value || "0",
+                    etherBalanceContract,
+                    reservedCD
+                  );
+                  setAddCDTokens(_addCDTokens)
+                }}
+                className={styles.input}
+                />
+                <div className={styles.inputDiv}>
+                  {`You'll need ${utils.formatEther(addCDTokens)} CryptoDev Tokens`}
+                </div>
+                <button className={styles.button1} onClick={_addLiquidity}>
+                  Add
+                </button>
+              </div>
+            )
+            }
+            <div>
+              <input 
+              type="number"
+              placeholder="Amount of LP Tokens"
+              onChange={async (e) => {
+                setRemoveLPTokens(e.target.value || "0");
+                await _getTokensAfterRemove(e.target.value || "0");
+              }}
+              className={styles.input}
+              />
+              <div className={styles.inputDiv}>
+                {`You'll get ${utils.formatEther(removeCD)} Crypto Dev Tokens and ${utils.formatEther(removeEther)} Eth`}
+              </div>
+              <button className={styles.button1} onClick={_removeLiquidity}>
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div>
+          <input 
+          placeholder="Amount" type="number" onChange={async(e) =>{
+            setSwapAmount(e.target.value || "");
+            await _getAmountOfTokensReceivedFromSwap(e.target.value || "0")
+          }}
+          className={styles.input}
+          value={swapAmount}
+          />
+          <select className={styles.select}
+          name='dropdown'
+          id="dropdown"
+          onChange={async()=>{
+            setEthSelected(!ethSelected);
+            await _getAmountOfTokensReceivedFromSwap(0);
+            setSwapAmount("");
+          }}>
+            <option value="eth">Ethereum</option>
+            <option value="cryptoDevToken">Crypto Dev Token</option>
+          </select>
+          <br/>
+          <div className={styles.inputDiv}>
+            {ethSelected ? `You'll get ${utils.formatEther(tokensToBeReceivedAfterSwap)} Crypto Dev Tokens`
+            : `You'll get ${utils.formatEther(tokensToBeReceivedAfterSwap)} Eth`
+            }
+          </div>
+          <button className={styles.button1} onClick={_swapTokens}>
+            Swap
+          </button>
+        </div>
+      );
+    }
+  };
+
+  return (
+    <div>
+      <Head>
+        <title>Crypto Devs</title>
+        <meta  name="description" content="decentralised Exchange-Dapp"/>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+
+      <div className={styles.main}>
+        <div>
+          <h1 className={styles.title}>Welcome to Crypto Devs Exchange!</h1>
+          <div className={styles.description}>Exchange Ethereum &#60;&#62; Crypto Dev Tokens</div>
+          <div>
+            <button className={styles.button} onClick={() => {
+              setLiquidityTab(true);
+            }}>
+              Liquidity
+            </button>
+            <button className={styles.button} onClick={() => {
+              setLiquidityTab(false);
+            }}>
+              Swap
+            </button>
+          </div>
+          {renderButton()}
+        </div>
+        <div>
+          <img className={styles.image} src='./cryptodev.svg'/>
+        </div>
+      </div>
+      <footer className={styles.footer}>
+        Made with &#10084;  by Crypto Guys
+      </footer>
+    </div>
+  );
 }
 
