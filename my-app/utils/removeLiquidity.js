@@ -5,21 +5,24 @@ import {
 } from "../constants"
 
 export const removeLiquidity = async (signer, removeLPTokensWei) => {
-    const exchangeContract = new Contract(EXCHANGE_CONTRACT_ABI, EXCHANGE_CONTRACT_ADDRESS, signer);
+    const exchangeContract = new Contract( EXCHANGE_CONTRACT_ADDRESS, EXCHANGE_CONTRACT_ABI, signer);
+
     const tx = await exchangeContract.removeLiquidity(removeLPTokensWei);
     await tx.wait();
 };
 
 export const getTokensAfterRemove = async (provider, removeLPTokenWei, _ethBalance, cryptoDevTokenReserve) => {
     try {
-        const exchangeContract = new Contract( EXCHANGE_CONTRACT_ABI, EXCHANGE_CONTRACT_ADDRESS, provider);
+        const exchangeContract = new Contract( EXCHANGE_CONTRACT_ADDRESS, EXCHANGE_CONTRACT_ABI, provider);
 
         const _totalSupply = await exchangeContract.totalSupply();
 
-        const _removeEther = _ethBalance.mul(removeLPTokenWei).div(_totalSupply);
+        const _removeEther = _ethBalance
+        .mul(removeLPTokenWei)
+        .div((_totalSupply)+1);
         const _removeCD = cryptoDevTokenReserve
         .mul(removeLPTokenWei)
-        .div(_totalSupply);
+        .div((_totalSupply)+1);
         return  {
             _removeEther,
             _removeCD
