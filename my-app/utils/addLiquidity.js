@@ -8,7 +8,7 @@ import {
 
 export const addLiquidity = async (signer, addCDAmountWei, addEtherAmountWei)=> {
     try{
-        const tokenContract = new Contract(EXCHANGE_CONTRACT_ADDRESS, EXCHANGE_CONTRACT_ABI, signer);
+        const tokenContract = new Contract(TOKEN_CONTRACT_ADDRESS, TOKEN_CONTRACT_ABI, signer);
 
         const exchangeContract = new Contract( EXCHANGE_CONTRACT_ADDRESS, EXCHANGE_CONTRACT_ABI, signer);
 
