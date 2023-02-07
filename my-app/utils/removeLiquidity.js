@@ -19,10 +19,10 @@ export const getTokensAfterRemove = async (provider, removeLPTokenWei, _ethBalan
 
         const _removeEther = _ethBalance
         .mul(removeLPTokenWei)
-        .div((_totalSupply)+1);
+        .div((_totalSupply));
         const _removeCD = cryptoDevTokenReserve
         .mul(removeLPTokenWei)
-        .div((_totalSupply)+1);
+        .div((_totalSupply));
         return  {
             _removeEther,
             _removeCD
