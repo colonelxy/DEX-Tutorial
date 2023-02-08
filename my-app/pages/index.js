@@ -358,15 +358,15 @@ export default function Home() {
   return (
     <div>
       <Head>
-        <title>Crypto Devs</title>
+        <title>Krypto Dex</title>
         <meta  name="description" content="decentralised Exchange-Dapp"/>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <div className={styles.main}>
         <div>
-          <h1 className={styles.title}>Welcome to Crypto Devs Exchange!</h1>
-          <div className={styles.description}>Exchange Ethereum &#60;&#62; Crypto Dev Tokens</div>
+          <h1 className={styles.title}>Welcome to Krypto Exchange!</h1>
+          <div className={styles.description}>Exchange Ethereum &#60;&#62; Krypto Tokens</div>
           <div>
             <button className={styles.button} onClick={() => {
               setLiquidityTab(true);
@@ -386,7 +386,7 @@ export default function Home() {
         </div>
       </div>
       <footer className={styles.footer}>
-        Made with &#10084;  by Crypto Guys
+        Made with &#10084;  by Krypto
       </footer>
     </div>
   );

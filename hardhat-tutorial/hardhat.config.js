@@ -9,6 +9,8 @@ module.exports = {
   solidity: "0.8.18",
   networks: {
     goerli: {
+      allowUnlimitedContractSize: true,
+      blockGasLimit: 2100000,
       url:ALCHEMY_URL,
       accounts: [GOERLI_KEY]
     },
